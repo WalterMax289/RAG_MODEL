@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG-MODEL CHAT BOT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=1.3">
+</head>
+
+<body>
+
+
+    <button class="doc-panel-toggle" id="docPanelToggle" onclick="toggleDocPanel()" title="Documents">📁</button>
+    <button class="theme-fixed-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle theme">
+        <img id="themeIcon" src="assets/moon.svg" alt="Toggle theme" width="22" height="22">
+    </button>
+
+    <div class="doc-panel-backdrop" id="docPanelBackdrop" onclick="toggleDocPanel()"></div>
+
+    <div class="doc-panel" id="docPanel">
+        <div class="doc-panel-header">
+            <span class="doc-panel-title">📁 Documents</span>
+            <button class="doc-panel-close" onclick="toggleDocPanel()">×</button>
+        </div>
+        <div class="doc-list" id="docList">
+            <div class="doc-empty">
+                <div class="doc-empty-icon">📄</div>
+                No documents uploaded yet.<br>Upload files to see them here.
+            </div>
+        </div>
+    </div>
+
+    <svg class="goo-filter" aria-hidden="true">
+        <defs>
+            <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+                <feColorMatrix
+                    in="blur"
+                    mode="matrix"
+                    values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
+                    result="goo"
+                />
+                <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+            </filter>
+        </defs>
+    </svg>
+
+    <div class="background" id="paths-container">
+        <!-- SVGs injected via JS -->
+    </div>
+
+    <div class="preview-modal" id="previewModal" onclick="closePreview(event)">
+        <button class="preview-modal-close" onclick="closePreview()">×</button>
+        <div class="preview-modal-content" id="previewContent"></div>
+        <div class="preview-modal-name" id="previewName"></div>
+    </div>
+
+
+
+    <!-- ─── HERO ─── -->
+    <section class="hero-section" id="hero">
+        <div class="hero-badge reveal reveal-delay-1">
+            <span class="badge-dot"></span>
+            AI Personal Brain Powered through RAG (Retrieval-Augmented Generation)
+        </div>
+
+        <h1 class="hero-title" id="title"></h1>
+
+        <p class="hero-subtitle reveal reveal-delay-3">
+            Upload your documents and instantly unlock private, AI-powered answers — no cloud, no leaks, all yours.
+        </p>
+
+        <div class="tech-marquee-wrap reveal reveal-delay-3" id="techMarquee">
+            <div class="tech-marquee-track" id="techMarqueeTrack"></div>
+        </div>
+
+        <div class="hero-stats reveal reveal-delay-4">
+            <div class="stat-item">
+                <div class="stat-number">
+                    <div class="stat-logo-wrap stat-logo-switch">
+                        <img src="assets/switch.svg" alt="Online / Offline" class="stat-logo-img">
+                    </div>
+                </div>
+                <div class="stat-label">Online / Offline</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">RAG</div>
+                <div class="stat-label">Powered Answers</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">
+                    <div class="stat-logo-wrap stat-logo-infinity">
+                        <img src="assets/infinity.svg" alt="Documents" class="stat-logo-img">
+                    </div>
+                </div>
+                <div class="stat-label">Documents</div>
+            </div>
+        </div>
+
+        <div class="button-wrapper reveal reveal-delay-4">
+            <button onclick="document.getElementById('chat-section').scrollIntoView({behavior:'smooth'})">
+                Start Chatting
+                <span class="arrow">→</span>
+            </button>
+        </div>
+
+        <div class="feature-cards reveal reveal-delay-5">
+            <div class="feat-card reveal reveal-delay-1">
+                <div class="feat-icon">
+                    <div class="feat-logo-wrap feat-logo-lock">
+                        <img src="assets/lock.svg" alt="Private & Local" class="feat-logo-img">
+                    </div>
+                </div>
+                <div class="feat-title">Private &amp; Local</div>
+                <div class="feat-desc">All processing runs on your machine. Your data never leaves your device.</div>
+            </div>
+            <div class="feat-card reveal reveal-delay-2">
+                <div class="feat-icon">
+                    <div class="feat-logo-wrap feat-logo-brain">
+                        <img src="assets/brain.svg" alt="Vector Search" class="feat-logo-img">
+                    </div>
+                </div>
+                <div class="feat-title">Vector Search</div>
+                <div class="feat-desc">Documents embedded into vectors via sentence-transformers for semantic recall.
+                </div>
+            </div>
+            <div class="feat-card reveal reveal-delay-3">
+                <div class="feat-icon">
+                    <div class="feat-logo-wrap feat-logo-bolt">
+                        <img src="assets/bolt.svg" alt="LLM Synthesis" class="feat-logo-img">
+                    </div>
+                </div>
+                <div class="feat-title">LLM Synthesis</div>
+                <div class="feat-desc">Answers generated by a local LLM (Mistral / LLaMA) grounded in your data.</div>
+            </div>
+        </div>
+
+        <div class="scroll-indicator reveal">
+            <span>Scroll</span>
+            <div class="chevron"></div>
+        </div>
+    </section>
+
+    <!-- ─── CHAT ─── -->
+    <section class="chat-section" id="chat-section">
+        <div class="chat-wrapper" id="chatWrapper">
+            <div class="chat-header">
+                <span style="display:flex; gap:10px; align-items:center;">
+                    <div class="status-dot"></div>
+                    AI PERSONAL BRAIN
+                </span>
+                <div class="header-actions">
+                    <div class="connection-toggle-wrap">
+                        <span class="toggle-label" id="connectionLabel">Offline</span>
+                        <label class="toggle connection-toggle" id="connectionToggle">
+                            <input type="checkbox" id="connectionCheckbox">
+                            <div class="toggle-track"></div>
+                            <svg class="toggle-svg" viewBox="0 0 52 32" filter="url(#goo)" aria-hidden="true">
+                                <circle class="knob-left"  cx="16" cy="16" r="10"/>
+                                <circle class="knob-right" cx="36" cy="16" r="10"/>
+                            </svg>
+                        </label>
+                    </div>
+                    <div class="header-divider"></div>
+                    <button class="header-btn" id="exportChatBtn" onclick="exportChat()" title="Export chat">
+                        <img src="assets/export chat.svg" alt="Export Chat">
+                    </button>
+                    <button class="header-btn" id="clearChatBtn" onclick="clearChat()" title="Clear chat">
+                        <img src="assets/clear chat.svg" alt="Clear Chat">
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai">
+                    <div class="avatar ai">V</div>
+                    <div class="bubble">
+                        I've analyzed your documents and mapped your local vectors. What would you like to know about
+                        your data?
+                    </div>
+                </div>
+            </div>
+
+            <div class="suggestions" id="suggestions">
+                <div class="sugg-pill" onclick="fillInput(this)">Explain the RAG pipeline</div>
+                <div class="sugg-pill" onclick="fillInput(this)">Summarize my documents</div>
+                <div class="sugg-pill" onclick="fillInput(this)">How does vector search work?</div>
+            </div>
+
+            <div class="input-wrapper">
+                <div id="file-pill-area"></div>
+                <div class="input-box">
+                    <input type="file" id="fileUpload" multiple accept=".pdf,.txt,.md,.docx" style="display:none"
+                        onchange="handleFileSelect(event)">
+                    <button class="upload-btn" onclick="document.getElementById('fileUpload').click()"
+                        title="Upload documents">
+                        <img src="assets/upload document.svg" alt="Upload Document">
+                    </button>
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Message the AI Brain..."
+                        onkeydown="checkEnter(event)" autocomplete="off">
+                    <button class="send-btn" onclick="sendMessage()">↑</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">AI Personal Brain</div>
+            <div class="footer-links">
+                <span>Built with</span>
+                <span class="footer-heart">&#9829;</span>
+                <span>built by Vinay, Nuthan and Kishore</span>
+            </div>
+            <div class="footer-copy">&copy; 2026 &mdash; All processing stays local &amp; private</div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

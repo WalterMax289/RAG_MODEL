@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local databases and uploads
+backend/chroma_db/
+backend/uploads/
+
+# User demo / duplicate / backup files
+frontend/copy.html
+frontend/Untitled-1.html
+frontend/background-paths.html
+frontend/paths-demo.css
+frontend/paths-demo.html
+frontend/paths-demo.js
+
+backend/index1.html
+backend/API_Masterclass.pdf
+backend/API_Masterclass_Extended.pdf
+backend/expand_pdf.py
+backend/generate_api_book.py
+backend/write_pdf_script.py
+
+# OS generated files
+.DS_Store
+Thumbs.db
+nul
+**/nul

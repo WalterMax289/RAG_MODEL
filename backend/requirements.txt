@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+chromadb>=0.4.0
+sentence-transformers
+ollama
+PyPDF2
+python-docx
