@@ -27,3 +27,6 @@ backend/write_pdf_script.py
 Thumbs.db
 nul
 **/nul
+
+# Trash folder
+trash/
