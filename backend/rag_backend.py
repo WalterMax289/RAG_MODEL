@@ -55,7 +55,7 @@ CHROMA_DIR.mkdir(exist_ok=True)
 
 COLLECTION_NAME = "documents"
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
-OLLAMA_MODEL = "mistral"
+OLLAMA_MODEL = "llama2:7b"
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
 
