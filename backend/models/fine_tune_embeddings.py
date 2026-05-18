@@ -14,7 +14,7 @@ except ImportError:
     exit(1)
 
 # --- CONFIGURATION ---
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHROMA_DIR = os.path.join(BASE_DIR, "chroma_db")
 COLLECTION_NAME = "documents"
 BASE_MODEL = "all-MiniLM-L6-v2"
