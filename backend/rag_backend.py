@@ -15,6 +15,16 @@ from pydantic import BaseModel
 import chromadb
 from chromadb.config import Settings
 
+# Import DuckDuckGo Search capabilities
+try:
+    from models.ddgs import perform_web_search, format_web_search_context
+except ImportError:
+    try:
+        from backend.models.ddgs import perform_web_search, format_web_search_context
+    except ImportError:
+        perform_web_search = None
+        format_web_search_context = None
+
 try:
     import ollama
 except ImportError:
@@ -279,9 +289,29 @@ async def chat_endpoint(request: ChatRequest):
         if any(k in q_lower for k in r["keywords"]):
             return ChatResponse(text=r["text"], followups=r["followups"])
 
+    is_online_mode = (request.model == 'online')
+
     if count == 0:
+        if is_online_mode and perform_web_search is not None:
+            # Perform live Web Search instead of saying empty database
+            search_results = perform_web_search(query, max_results=4)
+            if search_results:
+                context = format_web_search_context(search_results)
+                sources = list(set(r["href"] for r in search_results if r.get("href")))
+                source_info = f"\n\n_Web Sources: {', '.join(sources[:2])}_" if sources else ""
+                
+                answer = query_ollama(query, context, request.model)
+                answer += source_info
+                
+                followups = [
+                    "Tell me more about these web results.",
+                    "Can you find other sources?",
+                    "Summarize the web results."
+                ]
+                return ChatResponse(text=answer, followups=followups)
+
         return ChatResponse(
-            text="No documents have been uploaded yet. Please upload a document (PDF, TXT, MD, or DOCX) using the attachment icon (📎) so I can answer questions about your data.",
+            text="No documents have been uploaded yet. Please upload a document (PDF, TXT, MD, or DOCX) using the attachment icon (📎) so I can answer questions about your data. Alternatively, switch to **Online** mode in the header to search the live web!",
             followups=["Upload a document", "Explain the RAG pipeline", "How does vector search work?"],
         )
 
@@ -294,10 +324,31 @@ async def chat_endpoint(request: ChatRequest):
 
     retrieved_chunks = results["documents"][0] if results["documents"] else []
     metadatas = results["metadatas"][0] if results["metadatas"] else []
+    distances = results["distances"][0] if (results.get("distances") and results["distances"]) else []
+
+    # If the matches are very weak (Cosine distance > 0.70) and Online mode is active, do a web search fallback!
+    is_weak_match = len(distances) > 0 and distances[0] > 0.70
+
+    if (not retrieved_chunks or is_weak_match) and is_online_mode and perform_web_search is not None:
+        search_results = perform_web_search(query, max_results=4)
+        if search_results:
+            context = format_web_search_context(search_results)
+            sources = list(set(r["href"] for r in search_results if r.get("href")))
+            source_info = f"\n\n_Web Sources: {', '.join(sources[:2])}_" if sources else ""
+            
+            answer = query_ollama(query, context, request.model)
+            answer += source_info
+            
+            followups = [
+                "Tell me more about these web results.",
+                "Can you find other sources?",
+                "How does this compare to local documents?"
+            ]
+            return ChatResponse(text=answer, followups=followups)
 
     if not retrieved_chunks:
         return ChatResponse(
-            text="I searched your documents but couldn't find any relevant context to answer your question. Try rephrasing or uploading more files.",
+            text="I searched your documents but couldn't find any relevant context to answer your question. Try rephrasing, uploading more files, or switching to **Online** mode in the header to search the live web!",
             followups=["Upload more documents", "Summarize my documents", "Explain the RAG pipeline"],
         )
 
